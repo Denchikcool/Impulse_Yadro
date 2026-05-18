@@ -98,4 +98,15 @@ def generate_delta(config: dict, patched: dict) -> dict:
     return {"additions": additions, "deletions": deletions, "updates": updates}
 
 def apply_delta(config: dict, delta: dict) -> dict:
-    raise NotImplementedError
+    result = dict(config)
+
+    for key in delta["deletions"]:
+        result.pop(key, None)
+    
+    for upd in delta["updates"]:
+        result[upd["key"]] = upd["to"]
+    
+    for add in delta["additions"]:
+        result[add["key"]] = add["value"]
+    
+    return result
