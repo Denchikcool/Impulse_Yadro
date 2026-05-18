@@ -1,5 +1,6 @@
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
+from helpers import parse_multiplicity
 
 def build_xml_element(class_name: str, model: dict, children_map: dict) -> ET.Element:
     elem = ET.Element(class_name)
@@ -33,12 +34,6 @@ def generate_config_xml(model: dict, children_map: dict) -> str:
     lines = [l for l in pretty.splitlines() if l.strip() and not l.startswith("<?xml")]
 
     return "\n".join(lines) + "\n"
-
-def parse_multiplicity(mult: str) -> tuple[str, str]:
-    if ".." in mult:
-        parts = mult.split("..")
-        return parts[0], parts[1]
-    return mult, mult
 
 def generate_meta_json(model: dict, children_map: dict) -> list:
     classes = model["classes"]
