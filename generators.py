@@ -18,6 +18,15 @@ def generate_config_xml(model: dict, children_map: dict) -> str:
     root_class = next(name for name, info in model["classes"].items() if info["isRoot"])
     root_elem = build_xml_element(root_class, model, children_map)
 
+    def expand_empty(elem: ET.Element) -> None:
+        if elem.text is None and len(elem) == 0:
+            elem.text = ""
+        
+        for child in elem:
+            expand_empty(child)
+    
+    expand_empty(root_elem)
+    
     raw = ET.tostring(root_elem, encoding="unicode")
     dom = minidom.parseString(raw)
     pretty = dom.toprettyxml(indent="   ")
