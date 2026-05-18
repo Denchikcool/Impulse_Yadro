@@ -26,7 +26,7 @@ def generate_config_xml(model: dict, children_map: dict) -> str:
             expand_empty(child)
     
     expand_empty(root_elem)
-    
+
     raw = ET.tostring(root_elem, encoding="unicode")
     dom = minidom.parseString(raw)
     pretty = dom.toprettyxml(indent="   ")
@@ -34,8 +34,54 @@ def generate_config_xml(model: dict, children_map: dict) -> str:
 
     return "\n".join(lines) + "\n"
 
+def parse_multiplicity(mult: str) -> tuple[str, str]:
+    if ".." in mult:
+        parts = mult.split("..")
+        return parts[0], parts[1]
+    return mult, mult
+
 def generate_meta_json(model: dict, children_map: dict) -> list:
-    raise NotImplementedError
+    classes = model["classes"]
+    aggregations = model["aggregations"]
+
+    mult_map: dict = {}
+
+    for agg in aggregations:
+        mult_map[agg["source"]] = parse_multiplicity(agg["sourceMultiplicity"])
+
+    seen: list = []
+
+    for agg in aggregations:
+        if agg["source"] not in seen:
+            seen.append(agg["source"])
+    for name in classes:
+        if classes[name]["isRoot"] and name not in seen:
+            seen.append(name)
+    
+    result: list = []
+
+    for name in seen:
+        cls = classes[name]
+        entry: dict = {
+            "class": name,
+            "documentation": cls["documentation"],
+            "isRoot": cls["isRoot"]
+        }
+
+        if not cls["isRoot"]:
+            mn, mx = mult_map.get(name, ("0", "1"))
+            entry["max"] = mx
+            entry["min"] = mn
+        
+        params = [{"name": a["name"], "type": a["type"]} for a in cls["attributes"]]
+
+        for child_name, _ in children_map.get(name, []):
+            params.append({"name": child_name, "type": "class"})
+        
+        entry["parameters"] = params
+        result.append(entry)
+    
+    return result
 
 def generate_delta(config: dict, patched: dict) -> dict:
     raise NotImplementedError
