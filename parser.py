@@ -24,12 +24,12 @@ def parse_xml(path: str) -> dict:
                         "type": attr.attrib["type"]
                     })
             
-            classes[name] = {"isRoot": is_root, "documentation": doc, "attribures": attrs}
+            classes[name] = {"isRoot": is_root, "documentation": doc, "attributes": attrs}
         
         elif tag == "Aggregation":
             aggregations.append({
                 "source": child.attrib["source"],
-                "target": child.attrib["targer"],
+                "target": child.attrib["target"],
                 "sourceMultiplicity": child.attrib.get("sourceMultiplicity", "1"),
                 "targetMultiplicity": child.attrib.get("targetMultiplicity", "1")
             })
