@@ -84,7 +84,18 @@ def generate_meta_json(model: dict, children_map: dict) -> list:
     return result
 
 def generate_delta(config: dict, patched: dict) -> dict:
-    raise NotImplementedError
+    config_keys = set(config)
+    patched_keys = set(patched)
+
+    additions = [{"key": k, "value": patched[k]} for k in patched_keys - config_keys]
+    deletions = list(config_keys - patched_keys)
+    updates = [
+        {"key": k, "from": config[k], "to": patched[k]}
+        for k in config_keys & patched_keys
+        if config[k] != patched[k]
+    ]
+
+    return {"additions": additions, "deletions": deletions, "updates": updates}
 
 def apply_delta(config: dict, delta: dict) -> dict:
     raise NotImplementedError
